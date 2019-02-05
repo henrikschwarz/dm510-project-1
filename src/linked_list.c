@@ -9,7 +9,7 @@
 #include <stdio.h>
 
 linked_list *init_linked_list() {
-	linked_list *list = malloc(sizeof(linked_list)); // Allocate space
+	linked_list *list = malloc(sizeof(linked_list)); // Allocate space for list
 	return list; // List pointer
 }
 
