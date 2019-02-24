@@ -15,17 +15,17 @@ linked_list *init_linked_list() {
 }
 
 void add_element( linked_list *list, void *element) {
-	while (list->next != NULL) {
-		list = list->next; //  go to last list item
-	}
-	if (list->data == NULL){ // It is the first element of the list
+	if (list->data == NULL){ // If the list is empty
 		list->data = element;
 	} else {
+		while (list->next != NULL) {
+			list = list->next; //  go to last node
+		}
 		linked_list *new_list = init_linked_list(); // init new list
-		new_list->data = element; // Add data to item
-		new_list->previous = list; // Link item to list
+		new_list->data = element; // Add data to node
+		new_list->previous = list; // Link current node to list
 		new_list->next = NULL; // Set next item to null
-		list->next = new_list; // Link list to item
+		list->next = new_list; // Link list to current node
 	}
 }
 
@@ -49,58 +49,54 @@ int linked_list_size(linked_list *list) {
 }
 
 void *remove_first(linked_list *list) {
-	while (list->previous != NULL){
-		list = list->previous; // Find start of list
+	while (list->previous != NULL) {
+		list = list->previous; // Make sure we are at the start of the list
 	}
-	void *element;
-	if (list->next == NULL){ // Only one item
-		// printf("Data is null\n");
-		element = list->data; // Get data
-		list->data = NULL;
-		return element; // Return data
-	} else { // If more than one item
-		// We move item n+1 into n
-		list->data = list->next->data; // Move n+1 data into n
-		if (list->next->next != NULL){ // Check if n+2 is null
-			list->next = list->next->next; // Skip n+1
-			list->next->previous = list; // Asign n+2 previous to n
-		} else {
-			list->next = NULL;
+	if (list->data != NULL) { // Check that we have data
+		void* element = list->data; // Save our data
+		if (list->next != NULL) { // check that we have more than one element
+			list->data = list->next->data; // Insert data from next node into head of list
+			if (list->next->next != NULL) { // If list was size of 3
+				list->next->next->previous = list; // Linked node 3 to new head
+			}
+			free(list->next);
 		}
+		return element; // Return element
 	}
-	return element; // Return element
+	return NULL;
 }
 
 
 int remove_element(linked_list *list, void *element) {
-	while (list->previous != NULL){
-		list=list->previous; // Go to first list item
+	/*
+	* Has 3 different cases: Head of list, between two nodes or end of list
+	*/
+	while (list->previous != NULL) {
+		list = list->previous; // Find start of list
 	}
-	while (1==1){ // Keep looping
-		if (list->data == element){ // Found data
-			printf("Found data\n");
-			if (list->next != NULL){ // if list only contains 1 item
-				printf("First if\n");
-				list->next->previous = list->previous; // Replace next item previous
-													  // with current items previous
-				list->previous->next = list->next; // Replace current item with next item
-			} else { // If it is last item
-				if (list->previous != NULL) {
-					list->previous->next = list->next;
+	while (1==1) {
+		if (list->data == element) {
+			if (list->previous == NULL) {
+				// First node
+				list->data = NULL; // Remove node data if it is the first item
+				if (list->next != NULL) {
+					remove_first(list); // If there are more than one node in the list, use our function
 				}
-			}
-			if (list->next == NULL && list->next == NULL) {
+			} else if (list->next == NULL && list->previous != NULL) {
+				// Tail of the list
+				list->previous->next = NULL; // Remove link list to node
+				free(list); // Free the memory
+			} else if (list->next != NULL && list->previous != NULL) {
+				// Between two nodes
+				list->previous->next = list->next; // Link node n-1 to node n+1
+				list->next->previous = list->previous; // Link node n+1 to node n-1
 				free(list);
 			}
-			printf("Returning 0\n");
-			return 0; // return found item
-		}
-		if (list->next != NULL){
-			printf("Looped\n");
-			list = list->next; // Didn't find item, go to next item
-		} else {
-			break; // There are no more items
+			return 0;
+		} else if (list->next != NULL) { // If not at the end of list, go to next node
+			list = list->next;
+		} else { // Couldn't find the element in the list
+			return -1;
 		}
 	}
-	return -1; // Didn't find element
 }
